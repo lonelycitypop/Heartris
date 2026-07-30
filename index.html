@@ -537,7 +537,7 @@
             width: 85%;
             padding: 10px;
             margin: 14px 0;
-            border: 2px solid var(--border-color);
+            border: 2.5px solid var(--border-color);
             border-radius: 8px;
             text-align: center;
             font-size: 16px;
@@ -657,22 +657,24 @@
             4: { name: 'Stella', emoji: '🧁', color: '#ff85a1' },
             5: { name: 'Juun',   emoji: '👾', color: '#fbb1bd' },
             6: { name: 'A-na',   emoji: '🌻', color: '#f4acb7' },
-            7: { name: 'Ian',    emoji: '🟢', color: '#ffccd5' }, /* 已將 Ian 改為絕對安全的 🟢 圓形表情符號，避免瀏覽器無法渲染 */
+            7: { name: 'Ian',    emoji: '🟢', color: '#ffccd5' },
             8: { name: 'Ye-on',  emoji: '😊', color: '#52b788' }, 
-            9: { name: 'S2U',    emoji: '💞', color: '#ffb703' }, 
+            9: { name: 'S2U',    emoji: '💞', color: '#4cc9f0' }, 
             10:{ name: 'Falabella', emoji: '🦄', color: '#4cc9f0' }  
         };
 
-        /* 1到8號對應成員代表水果與印象圖示 */
+        /* 1到10號已對應 GitHub images 資料夾內的圖片檔名 */
         const MEMBER_PLACEHOLDER_EMOJIS = {
-            1: '🥥', // Carmen
-            2: '🍓', // Jiwoo
-            3: '🍑', // Yuha
-            4: '🍒', // Stella
-            5: '🍇', // Juun
-            6: '🍊', // A-na
-            7: '🟢', // Ian (已改為安全圖示)
-            8: '😊'  // Ye-on
+            1: '<img src="images/Emojicarmen.jpg" alt="Carmen">',
+            2: '<img src="images/Emojijiwoo.jpg" alt="Jiwoo">',
+            3: '<img src="images/Emojiyuha.jpg" alt="Yuha">',
+            4: '<img src="images/Emojistella.jpg" alt="Stella">',
+            5: '<img src="images/Emojijuun.jpg" alt="Juun">',
+            6: '<img src="images/Emojia-na.jpg" alt="A-na">',
+            7: '<img src="images/Emojiian.jpg" alt="Ian">',
+            8: '<img src="images/Emojiye-on.jpg" alt="Ye-on">',
+            9: '<img src="images/Hearts2Hearts_logo.svg.jpg" alt="S2U">',
+            10: '<img src="images/Emojifalabella.jpg" alt="Falabella">'
         };
 
         const TETROMINOS = {
