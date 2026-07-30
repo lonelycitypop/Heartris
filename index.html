@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heartris 💖 Tetris for S2U</title>
+    <style>
+        :root {
+            --bg-color: #fcf9e8;
+            --panel-bg: #f9f4dc;
+            --border-color: #e6c86e;
+            --text-color: #635213;
+            --accent-color: #cca300;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fcf9e8 0%, #f4eca8 100%);
+            color: var(--text-color);
+            margin: 0;
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .page-container {
+            display: flex;
+            gap: 28px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 1750px;
+        }
+
+        /* 左側統計區塊：五五並列 2 欄，最下方加入嵌入圖片面板 */
+        .stats-column {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 540px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(199, 163, 0, 0.08);
+        }
+
+        .stat-visuals {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-emoji {
+            font-size: 18px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            transition: transform 0.1s ease-out; 
+        }
+
+        .shape-hint {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5px;
+            background: rgba(255,255,255,0.7);
+            padding: 2px;
+            border-radius: 6px;
+            border: 1px solid rgba(230, 200, 110, 0.7);
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+        }
+        
+        .shape-hint-row {
+            display: flex;
+            gap: 1.5px;
+        }
+        
+        .shape-hint-cell {
+            width: 6px;
+            height: 6px;
+            border-radius: 1px;
+        }
+
+        .mystery-hint {
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 6px;
+            border: 1.5px dashed var(--accent-color);
+        }
+
+        .member-photo-slot {
+            width: 32px;
+            height: 32px;
+            border: 2px solid #d4b855;
+            border-radius: 8px;
+            background: #fff9e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .member-photo-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: auto;
+            gap: 1px;
+        }
+
+        .stat-name {
+            color: var(--text-color);
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 1px;
+        }
+
+        .stat-current { color: #b59100; font-size: 11px; }
+        .stat-best { color: #876d0d; font-size: 10px; }
+
+        /* 最高關卡橫跨兩欄 */
+        .high-level-box {
+            grid-column: span 2;
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 10px 14px;
+            text-align: center;
+        }
+
+        .high-level-box h2 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #b59100;
+        }
+
+        .high-level-box .value {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* 左下角可嵌入圖片的面板 (橫跨兩欄) */
+        .left-image-panel {
+            grid-column: span 2;
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 14px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(199, 163, 0, 0.08);
+        }
+
+        .left-image-panel h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #b59100;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            overflow: hidden;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 24px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(199, 163, 0, 0.12);
+            border: 3px solid var(--border-color);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .main-board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0 0 14px 0;
+            color: #b59100;
+            font-size: 32px;
+            text-shadow: 2px 2px 0px #fff;
+            letter-spacing: 2px;
+        }
+
+        #tetris-canvas {
+            background-color: #fffafc;
+            border: 4px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: inset 0 0 10px rgba(230, 200, 110, 0.3);
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 215px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 240px;
+        }
+
+        .info-box-next {
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .info-box-next h2 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: #b59100;
+        }
+
+        #next-canvas {
+            background-color: #fffafc;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            margin-top: 4px;
+            width: 100px;
+            height: 100px;
+        }
+
+        .info-box-small {
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 14px;
+            text-align: center;
+        }
+
+        .info-box-small h2 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #b59100;
+        }
+
+        .info-box-small .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .progress-container {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .progress-bar-bg {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            height: 15px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #f2d66d 0%, #cca300 100%);
+            height: 100%;
+            width: 0%;
+            border-radius: 8px;
+            transition: width 0.3s ease-in-out;
+        }
+
+        .progress-text {
+            font-size: 11px;
+            color: #b59100;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2px;
+        }
+
+        .level-info-box {
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-color);
+        }
+
+        .level-info-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #b59100;
+            text-align: center;
+        }
+
+        .probability-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px 8px;
+            margin-top: 6px;
+            font-size: 13px;
+        }
+
+        .probability-item {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(230, 200, 110, 0.5);
+        }
+
+        .controls-info {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-color);
+            text-align: left;
+            padding: 14px;
+        }
+
+        .right-bottom-group {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .youtube-box {
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(199, 163, 0, 0.08);
+        }
+
+        .youtube-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #b59100;
+        }
+
+        .youtube-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+            border: 1.5px solid rgba(230, 200, 110, 0.8);
+            border-radius: 10px;
+            padding: 16px 8px;
+            text-decoration: none;
+            color: #635213;
+            font-size: 13px;
+            font-weight: bold;
+            gap: 6px;
+            transition: transform 0.15s, background 0.15s;
+        }
+
+        .youtube-card:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #ffe8a1 0%, #ffd97d 100%);
+        }
+
+        .youtube-icon {
+            font-size: 26px;
+        }
+
+        .traffic-counter-box {
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(199, 163, 0, 0.08);
+        }
+
+        .traffic-counter-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #b59100;
+        }
+
+        .traffic-counter-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid rgba(230, 200, 110, 0.7);
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .copyright-box {
+            background: var(--panel-bg);
+            border: 2.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(199, 163, 0, 0.08);
+            font-size: 12px;
+            line-height: 1.6;
+            color: #7a6820;
+        }
+
+        .copyright-box h3 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #b59100;
+        }
+
+        .copyright-box a {
+            color: #b59100;
+            text-decoration: underline;
+            word-break: break-all;
+            font-weight: bold;
+        }
+
+        .copyright-box a:hover {
+            color: #876d0d;
+        }
+
+        button.btn {
+            background: linear-gradient(135deg, #e6c239 0%, #cca300 100%);
+            color: #4a3d08;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(199, 163, 0, 0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        button.btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(199, 163, 0, 0.3);
+        }
+
+        button.btn:active {
+            transform: translateY(1px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(99, 82, 19, 0.3);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 20px;
+            border: 3px solid var(--accent-color);
+            text-align: center;
+            width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            font-size: 15px;
+        }
+
+        .modal-content h2 {
+            font-size: 22px;
+            color: #b59100;
+            margin-top: 0;
+        }
+
+        .modal-content input {
+            width: 85%;
+            padding: 10px;
+            margin: 14px 0;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .flying-particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 26px;
+            z-index: 9999;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        <!-- 左側面板 (1-10 號方塊統計、最高關卡紀錄，並在下方加入嵌入圖片面板) -->
+        <div class="stats-column" id="stats-left"></div>
+
+        <!-- 遊戲主體 -->
+        <div class="game-container">
+            <div class="main-board">
+                <h1>💛 HEARTRIS 💛</h1>
+                <canvas id="tetris-canvas" width="360" height="600"></canvas>
+            </div>
+
+            <div class="side-panel">
+                <!-- 下一個成員面板 -->
+                <div class="info-box-next">
+                    <h2>Next Member<br><span style="font-size: 12px; font-weight: normal;">다음 멤버</span></h2>
+                    <canvas id="next-canvas" width="95" height="95"></canvas>
+                </div>
+
+                <!-- 目前關卡面板 -->
+                <div class="info-box-small">
+                    <h2>Current Level<br><span style="font-size: 11px; font-weight: normal;">현재 레벨</span></h2>
+                    <div id="level-display" class="value">1</div>
+                    <div class="progress-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progress / 진행도</span>
+                            <span id="lines-needed-text">Need 3 / 3행 필요</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" id="start-btn">Start / Restart<br><span style="font-size: 12px;">시작 / 다시 시작</span></button>
+
+                <!-- 動態數值面板 -->
+                <div class="level-info-box">
+                    <h3>📊 Difficulty Status<br><span style="font-size: 11px; font-weight: normal;">난이도 상태</span></h3>
+                    <div>Speed / 속도: <span id="speed-display">800</span> ms</div>
+                    <div style="margin-top: 6px; font-weight: bold; color: var(--accent-color);">Block Probabilities / 블록 확률:</div>
+                    <div class="probability-grid" id="probability-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側面板 (包含操作說明、YouTube 連結、訪客統計與右側版權宣告) -->
+        <div class="right-panel">
+            <div class="info-box-small controls-info">
+                <strong>🎮 Controls / 조작법:</strong><br>
+                ⬅️ ➡️ : Move / 이동<br>
+                ⬆️ : Rotate / 회전<br>
+                ⬇️ : Soft Drop / 빠르게 내리기<br>
+                <strong>Space</strong> : Hard Drop / 즉시 낙하
+            </div>
+
+            <div class="right-bottom-group">
+                <div class="youtube-box">
+                    <h3>🎵 Title Track Link<br><span style="font-size: 11px; font-weight: normal;">타이틀곡 링크</span></h3>
+                    <a href="https://www.youtube.com/watch?v=MDt60jU3O2w" target="_blank" class="youtube-card">
+                        <span class="youtube-icon">▶️</span>
+                        <span>Watch MV / MV 보기</span>
+                    </a>
+                </div>
+
+                <div class="traffic-counter-box">
+                    <h3>📈 Visitor Stats<br><span style="font-size: 11px; font-weight: normal;">방문자 통계</span></h3>
+                    <div class="traffic-counter-content">
+                        <a href="https://www.hitwebcounter.com" target="_blank" rel="nofollow" style="text-decoration:none;">
+                            <img src="https://hitwebcounter.com/counter/counter.php?page=9724128&style=0006&nbdigits=5&type=page&initCount=100" title="Web Counter" Alt="web counter" border="0" />
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 版權聲明面板 -->
+                <div class="copyright-box">
+                    <h3>⚖️ Copyright Notice<br><span style="font-size: 11px; font-weight: normal;">저작권 고지</span></h3>
+                    <p>I do not own the rights to these images and music; all rights belong to SM Entertainment. This is a non-profit fan project made for entertainment.<br>
+                    본 이미지와 음악의 저작권은 SM 엔터테인먼트에 있으며, 본인은 팬으로서 오직 재미를 위해 제작했습니다.<br><br>
+                    My YouTube Link / 유튜브 링크:<br><a href="https://www.youtube.com/watch?v=MDt60jU3O2w" target="_blank">Click Here / 여기를 클릭</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="game-over-modal">
+        <div class="modal-content">
+            <h2>💛 Game Over! 💛<br><span style="font-size: 15px; font-weight: normal;">게임 오버!</span></h2>
+            <p>You reached / 도달한 레벨: <strong id="final-level" style="color: var(--accent-color); font-size: 22px;">Level 1</strong></p>
+            <input type="text" id="player-name" placeholder="Enter Nickname / 닉네임 입력" maxlength="10">
+            <br><br>
+            <button class="btn" id="save-btn">Save Record / 기록 저장</button>
+        </div>
+    </div>
+
+    <script>
+        /* 8位成員與特殊方塊資訊 */
+        const MASCOTS = {
+            1: { name: 'Carmen', emoji: '🌴', color: '#ff7096' },
+            2: { name: 'Jiwoo',  emoji: '🍓', color: '#ffb3c6' },
+            3: { name: 'Yuha',   emoji: '🎀', color: '#ffd1e3' },
+            4: { name: 'Stella', emoji: '🧁', color: '#ff85a1' },
+            5: { name: 'Juun',   emoji: '👾', color: '#fbb1bd' },
+            6: { name: 'A-na',   emoji: '🌻', color: '#f4acb7' },
+            7: { name: 'Ian',    emoji: '🫛', color: '#ffccd5' }, /* 已將 Ian 改回 🫛 */
+            8: { name: 'Ye-on',  emoji: '🍃', color: '#52b788' }, 
+            9: { name: 'S2U',    emoji: '💞', color: '#ffb703' }, 
+            10:{ name: 'Falabella', emoji: '🦄', color: '#4cc9f0' }  
+        };
+
+        /* 1到8號對應成員代表水果與印象圖示（Ian 已改回 🫛） */
+        const MEMBER_PLACEHOLDER_EMOJIS = {
+            1: '🥥', // Carmen
+            2: '🍓', // Jiwoo
+            3: '🍑', // Yuha
+            4: '🍒', // Stella
+            5: '🍇', // Juun
+            6: '🍊', // A-na
+            7: '🫛', // Ian (已改回 🫛)
+            8: '🍃'  // Ye-on
+        };
+
+        const TETROMINOS = {
+            1: [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], 
+            2: [[2,2], [2,2]],                               
+            3: [[0,3,0], [3,3,3], [0,0,0]],                  
+            4: [[0,4,4], [4,4,0], [0,0,0]],                  
+            5: [[5,5,0], [0,5,5], [0,0,0]],                  
+            6: [[6,0,0], [6,6,6], [0,0,0]],                  
+            7: [[0,0,7], [7,7,7], [0,0,0]],                  
+            8: [[8,0], [8,8]],                               
+            9: [[9]],                                        
+            10:[[10]]                                        
+        };
+
+        const SHAPE_HINTS = {
+            1: [[1,1,1,1]], 
+            2: [[1,1],[1,1]], 
+            3: [[0,1,0],[1,1,1]], 
+            4: [[0,1,1],[1,1,0]], 
+            5: [[1,1,0],[0,1,1]], 
+            6: [[1,0,0],[1,1,1]], 
+            7: [[0,0,1],[1,1,1]], 
+            8: [[1,0],[1,1]], 
+            9: null,          
+            10: [[1]] 
+        };
+
+        function getLinesNeededForLevel(lvl) {
+            return 2 + lvl;
+        }
+
+        const canvas = document.getElementById('tetris-canvas');
+        const ctx = canvas.getContext('2d');
+        const nextCanvas = document.getElementById('next-canvas');
+        const nextCtx = nextCanvas.getContext('2d');
+
+        const COLS = 12;
+        const ROWS = 20;
+        const BLOCK_SIZE = 30;
+
+        let grid = createGrid(COLS, ROWS);
+        let level = 1;
+        let linesInCurrentLevel = 0;
+        let highLevel = localStorage.getItem('heartris_highlevel') || 1;
+        let gameOver = false;
+        let isPlaying = false;
+        let dropCounter = 0;
+        let dropInterval = 800; 
+        
+        let mysteryCounter = 0;
+        const mysteryInterval = 800; 
+        let lastTime = 0;
+        
+        let currentStats = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0};
+        let bestStats = JSON.parse(localStorage.getItem('heartris_best_stats')) || {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0};
+
+        let player = { pos: { x: 0, y: 0 }, matrix: null, id: 0, tempId: 1 };
+        let nextPiece = { matrix: null, id: 0 };
+
+        function updateProgressBar() {
+            const targetLines = getLinesNeededForLevel(level);
+            const percentage = Math.min((linesInCurrentLevel / targetLines) * 100, 100);
+            const needed = targetLines - linesInCurrentLevel;
+            
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('lines-needed-text').innerText = `Need ${needed} / ${needed}행 필요`;
+        }
+
+        function generateShapeHintHTML(id, color) {
+            if (id === 9) { 
+                return `<div class="mystery-hint" id="mystery-icon">❓</div>`;
+            }
+            const matrix = SHAPE_HINTS[id];
+            let html = '<div class="shape-hint">';
+            for (let r = 0; r < matrix.length; r++) {
+                html += '<div class="shape-hint-row">';
+                for (let c = 0; c < matrix[r].length; c++) {
+                    const isFilled = matrix[r][c] !== 0;
+                    const bg = isFilled ? color : 'transparent';
+                    const border = isFilled ? '1px solid rgba(0,0,0,0.1)' : '1px solid transparent';
+                    html += `<div class="shape-hint-cell" style="background-color: ${bg}; border: ${border};"></div>`;
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function initStatsUI() {
+            const leftCol = document.getElementById('stats-left');
+            leftCol.innerHTML = '';
+            
+            for(let i=1; i<=10; i++) {
+                const mascot = MASCOTS[i];
+                const box = document.createElement('div');
+                box.className = 'stat-box';
+                
+                const photoContent = MEMBER_PLACEHOLDER_EMOJIS[i] || '🖼️';
+
+                box.innerHTML = `
+                    <div class="stat-visuals">
+                        <div class="stat-emoji" id="stat-icon-${i}" style="background-color: ${mascot.color}">${mascot.emoji}</div>
+                        ${generateShapeHintHTML(i, mascot.color)}
+                        <div class="member-photo-slot">${photoContent}</div>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-name">${mascot.name}</div>
+                        <div class="stat-current">Now / 이번: <span id="stat-curr-${i}">0</span></div>
+                        <div class="stat-best">Best / 최고: <span id="stat-best-${i}">${bestStats[i]}</span></div>
+                    </div>
+                `;
+                leftCol.appendChild(box);
+            }
+
+            const highLevelBox = document.createElement('div');
+            highLevelBox.className = 'high-level-box';
+            highLevelBox.innerHTML = `
+                <h2>Best Level / 최고 레벨</h2>
+                <div id="high-level-display" class="value">${highLevel}</div>
+            `;
+            leftCol.appendChild(highLevelBox);
+
+            const leftImagePanel = document.createElement('div');
+            leftImagePanel.className = 'left-image-panel';
+            leftImagePanel.innerHTML = `
+                <h3>Custom Image / 커스텀 이미지</h3>
+                <div class="image-container">
+                    🖼️
+                </div>
+            `;
+            leftCol.appendChild(leftImagePanel);
+        }
+
+        setInterval(() => {
+            const mIcon = document.getElementById('mystery-icon');
+            if (mIcon) {
+                const colors = ['#cca300', '#d4b855', '#e6c239', '#ff922b', '#82c91e', '#15aabf'];
+                mIcon.style.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+        }, 400);
+
+        function updateStatsUI() {
+            for(let i=1; i<=10; i++) {
+                const currEl = document.getElementById(`stat-curr-${i}`);
+                if(currEl) currEl.innerText = currentStats[i];
+                
+                const bestEl = document.getElementById(`stat-best-${i}`);
+                if(bestEl) bestEl.innerText = Math.max(currentStats[i], bestStats[i]);
+            }
+        }
+
+        function createGrid(cols, rows) {
+            return Array.from({ length: rows }, () => Array(cols).fill(0));
+        }
+
+        function getGameParameters() {
+            let mysteryProb = Math.min(3.0 + (level - 1) * 0.25, 25.0);
+            let ponyProb = 3.0; 
+            
+            let remainingProb = 100.0 - mysteryProb - ponyProb;
+            let standardProb = remainingProb / 8.0;
+
+            let weights = [
+                { id: 1,  weight: standardProb },
+                { id: 2,  weight: standardProb },
+                { id: 3,  weight: standardProb },
+                { id: 4,  weight: standardProb },
+                { id: 5,  weight: standardProb },
+                { id: 6,  weight: standardProb },
+                { id: 7,  weight: standardProb },
+                { id: 8,  weight: standardProb },
+                { id: 9,  weight: mysteryProb },
+                { id: 10, weight: ponyProb }
+            ];
+
+            let speed = Math.max(800 - (level - 1) * 25, 200);
+
+            return { weights, speed };
+        }
+
+        function updateLevelInfoDisplay() {
+            const params = getGameParameters();
+            document.getElementById('speed-display').innerText = params.speed;
+            
+            let listHtml = '';
+            params.weights.forEach(item => {
+                let emoji = MASCOTS[item.id].emoji;
+                listHtml += `<div class="probability-item"><span>${emoji}</span><span>${item.weight.toFixed(1)}%</span></div>`;
+            });
+            document.getElementById('probability-list').innerHTML = listHtml;
+            updateProgressBar();
+        }
+
+        function createPiece() {
+            const params = getGameParameters();
+            let rand = Math.random() * 100;
+            let selectedId = 1;
+
+            for (let item of params.weights) {
+                if (rand < item.weight) {
+                    selectedId = item.id;
+                    break;
+                }
+                rand -= item.weight;
+            }
+
+            return {
+                id: selectedId,
+                matrix: JSON.parse(JSON.stringify(TETROMINOS[selectedId]))
+            };
+        }
+
+        function resetPlayer() {
+            if (!nextPiece.matrix) {
+                nextPiece = createPiece();
+            }
+            player.matrix = nextPiece.matrix;
+            player.id = nextPiece.id;
+            
+            currentStats[player.id]++;
+            updateStatsUI();
+
+            if (player.id === 9) {
+                player.tempId = 1; 
+            } else {
+                player.tempId = player.id;
+            }
+
+            player.pos.y = 0;
+            player.pos.x = Math.floor((COLS / 2)) - Math.floor(player.matrix[0].length / 2);
+
+            nextPiece = createPiece();
+            drawNextPiece();
+
+            if (collide(grid, player)) {
+                gameOver = true;
+                isPlaying = false;
+                showGameOverModal();
+            }
+        }
+
+        function collide(board, obj) {
+            const [m, o] = [obj.matrix, obj.pos];
+            for (let y = 0; y < m.length; ++y) {
+                for (let x = 0; x < m[y].length; ++x) {
+                    if (m[y][x] !== 0) {
+                        let newX = x + o.x;
+                        let newY = y + o.y;
+                        if (newX < 0 || newX >= COLS || newY >= ROWS || (board[newY] && board[newY][newX] !== 0)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function merge(board, obj) {
+            obj.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        let finalValue = (obj.id === 9) ? 9 : obj.id;
+                        let targetX = x + obj.pos.x;
+                        let targetY = y + obj.pos.y;
+                        if(targetY >= 0 && targetY < ROWS && targetX >= 0 && targetX < COLS) {
+                            board[targetY][targetX] = finalValue;
+                        }
+                    }
+                });
+            });
+        }
+
+        function rotate(matrix) {
+            const result = matrix.map((_, index) => matrix.map(col => col[index]));
+            return result.map(row => row.reverse());
+        }
+
+        function playerRotate() {
+            const pos = player.pos.x;
+            const oldMatrix = player.matrix;
+            let offset = 1;
+            player.matrix = rotate(player.matrix);
+            
+            while (collide(grid, player)) {
+                player.pos.x += offset;
+                offset = -(offset + (offset > 0 ? 1 : -1));
+                if (offset > player.matrix[0].length) {
+                    player.matrix = oldMatrix;
+                    player.pos.x = pos;
+                    return;
+                }
+            }
+        }
+
+        function updateMysteryPieceTime(deltaTime) {
+            if (player.id === 9) {
+                mysteryCounter += deltaTime;
+                if (mysteryCounter >= mysteryInterval) {
+                    mysteryCounter = 0;
+                    
+                    const possibleIds = [1, 2, 3, 4, 5, 6, 7, 8, 10];
+                    const randomId = possibleIds[Math.floor(Math.random() * possibleIds.length)];
+                    const newMatrix = JSON.parse(JSON.stringify(TETROMINOS[randomId]));
+                    
+                    const oldMatrix = player.matrix;
+                    const oldX = player.pos.x;
+
+                    player.matrix = newMatrix;
+                    player.tempId = randomId;
+
+                    let offset = 0;
+                    while (collide(grid, player)) {
+                        player.pos.x += 1; 
+                        offset++;
+                        if (offset > player.matrix[0].length) {
+                            player.pos.x = oldX - 1;
+                            offset = 0;
+                            while (collide(grid, player)) {
+                                player.pos.x -= 1;
+                                offset++;
+                                if (offset > player.matrix[0].length) {
+                                    player.matrix = oldMatrix;
+                                    player.pos.x = oldX;
+                                    return;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function playerDrop() {
+            player.pos.y++;
+            if (collide(grid, player)) {
+                player.pos.y--;
+                merge(grid, player);
+                clearLines();
+                resetPlayer();
+            } else {
+                updateMysteryPieceTime(0);
+            }
+            dropCounter = 0;
+        }
+
+        function playerHardDrop() {
+            while (!collide(grid, player)) {
+                player.pos.y++;
+            }
+            player.pos.y--;
+            merge(grid, player);
+            clearLines();
+            resetPlayer();
+            dropCounter = 0;
+        }
+        
+        function spawnParticle(id, gridX, gridY) {
+            const mascot = MASCOTS[id];
+            if (!mascot) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const startX = rect.left + gridX * BLOCK_SIZE + BLOCK_SIZE / 2;
+            const startY = rect.top + gridY * BLOCK_SIZE + BLOCK_SIZE / 2;
+
+            const targetIcon = document.getElementById(`stat-icon-${id}`);
+            if (!targetIcon) return;
+            
+            const tRect = targetIcon.getBoundingClientRect();
+            const endX = tRect.left + tRect.width / 2;
+            const endY = tRect.top + tRect.height / 2;
+
+            const particle = document.createElement('div');
+            particle.className = 'flying-particle';
+            particle.innerText = mascot.emoji;
+            document.body.appendChild(particle);
+
+            const duration = 600 + Math.random() * 300;
+            const midX = startX + (endX - startX) / 2;
+            const midY = Math.min(startY, endY) - 60 - Math.random() * 40;
+
+            particle.animate([
+                { left: startX + 'px', top: startY + 'px', transform: 'translate(-50%, -50%) scale(1)' },
+                { left: midX + 'px', top: midY + 'px', transform: 'translate(-50%, -50%) scale(1.4)' },
+                { left: endX + 'px', top: endY + 'px', transform: 'translate(-50%, -50%) scale(0.6)', opacity: 0.7 }
+            ], {
+                duration: duration,
+                easing: 'ease-in-out',
+                fill: 'forwards'
+            }).onfinish = () => {
+                particle.remove();
+                targetIcon.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.4)' },
+                    { transform: 'scale(1)' }
+                ], { duration: 250 });
+            };
+        }
+
+        function clearLines() {
+            let linesCleared = 0;
+            outer: for (let y = grid.length - 1; y >= 0; --y) {
+                for (let x = 0; x < grid[y].length; ++x) {
+                    if (grid[y][x] === 0) continue outer;
+                }
+                
+                const removedRow = grid.splice(y, 1)[0];
+                for (let px = 0; px < COLS; ++px) {
+                    const id = removedRow[px];
+                    if(id !== 0) {
+                        spawnParticle(id, px, y);
+                    }
+                }
+                
+                grid.unshift(removedRow.fill(0));
+                ++y;
+                linesCleared++;
+            }
+
+            if (linesCleared > 0) {
+                linesInCurrentLevel += linesCleared;
+                let needed = getLinesNeededForLevel(level);
+                while (linesInCurrentLevel >= needed) {
+                    linesInCurrentLevel -= needed;
+                    level++;
+                    needed = getLinesNeededForLevel(level);
+                }
+                document.getElementById('level-display').innerText = level;
+                updateLevelInfoDisplay();
+            }
+        }
+
+        function drawCell(context, x, y, size, id) {
+            if (id === 0) return;
+            const mascot = MASCOTS[id];
+            
+            context.fillStyle = mascot.color;
+            context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
+
+            context.strokeStyle = '#ffffff';
+            context.lineWidth = 2;
+            context.strokeRect(x * size + 2, y * size + 2, size - 4, size - 4);
+
+            context.font = `${size * 0.65}px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(mascot.emoji, (x + 0.5) * size, (y + 0.53) * size);
+        }
+
+        function drawMatrix(matrix, offset, context, size, renderId, tempRenderId) {
+            matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        let currentId = renderId;
+                        if (renderId === 9) {
+                            currentId = 9;
+                        } else if (renderId === undefined || renderId === 0) {
+                            currentId = value;
+                        }
+                        drawCell(context, x + offset.x, y + offset.y, size, currentId);
+                    }
+                });
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            grid.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        drawCell(ctx, x, y, BLOCK_SIZE, value);
+                    }
+                });
+            });
+
+            if (player.matrix) {
+                drawMatrix(player.matrix, player.pos, ctx, BLOCK_SIZE, player.id, player.tempId);
+            }
+        }
+
+        function drawNextPiece() {
+            nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+            if (!nextPiece.matrix) return;
+            
+            const offsetX = (4 - nextPiece.matrix[0].length) / 2;
+            const offsetY = (4 - nextPiece.matrix.length) / 2;
+            drawMatrix(nextPiece.matrix, {x: offsetX, y: offsetY}, nextCtx, 23.5, nextPiece.id, nextPiece.id);
+        }
+
+        function update(time = 0) {
+            if (!isPlaying) return;
+            const deltaTime = time - lastTime;
+            lastTime = time;
+            
+            dropCounter += deltaTime;
+            const params = getGameParameters();
+            dropInterval = params.speed;
+
+            if (dropCounter > dropInterval) {
+                playerDrop();
+            }
+
+            updateMysteryPieceTime(deltaTime);
+            
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function startGame() {
+            grid = createGrid(COLS, ROWS);
+            level = 1;
+            linesInCurrentLevel = 0;
+            gameOver = false;
+            isPlaying = true;
+            mysteryCounter = 0;
+            document.getElementById('level-display').innerText = '1';
+            document.getElementById('game-over-modal').style.display = 'none';
+            
+            for(let i=1; i<=10; i++) currentStats[i] = 0;
+            updateStatsUI();
+            updateLevelInfoDisplay();
+            
+            resetPlayer();
+            lastTime = performance.now();
+            update();
+        }
+
+        function showGameOverModal() {
+            document.getElementById('final-level').innerText = `Level ${level} / 레벨 ${level}`;
+            document.getElementById('game-over-modal').style.display = 'flex';
+
+            if (level > highLevel) {
+                highLevel = level;
+                localStorage.setItem('heartris_highlevel', highLevel);
+                const highLevelDisplay = document.getElementById('high-level-display');
+                if (highLevelDisplay) highLevelDisplay.innerText = highLevel;
+            }
+
+            for(let i=1; i<=10; i++) {
+                if (currentStats[i] > bestStats[i]) bestStats[i] = currentStats[i];
+            }
+            localStorage.setItem('heartris_best_stats', JSON.stringify(bestStats));
+            updateStatsUI();
+        }
+
+        document.addEventListener('keydown', event => {
+            if ([32, 37, 38, 39, 40].includes(event.keyCode)) event.preventDefault();
+            if (!isPlaying) return;
+
+            switch (event.keyCode) {
+                case 37: 
+                    player.pos.x--;
+                    if (collide(grid, player)) player.pos.x++;
+                    break;
+                case 39: 
+                    player.pos.x++;
+                    if (collide(grid, player)) player.pos.x--;
+                    break;
+                case 40: 
+                    playerDrop();
+                    break;
+                case 38: 
+                    playerRotate(); 
+                    break;
+                case 32: 
+                    playerHardDrop();
+                    break;
+            }
+            draw();
+        });
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            this.blur(); 
+            startGame();
+        });
+
+        document.getElementById('save-btn').addEventListener('click', function() {
+            const name = document.getElementById('player-name').value.trim() || 'Anonymous / 익명';
+            const history = JSON.parse(localStorage.getItem('heartris_history') || '[]');
+            history.push({ name, level, date: new Date().toLocaleDateString() });
+            history.sort((a, b) => b.level - a.level);
+            localStorage.setItem('heartris_history', JSON.stringify(history.slice(0, 10)));
+            
+            document.getElementById('game-over-modal').style.display = 'none';
+            alert(`💛 ${name}'s score (Level ${level}) has been saved locally!\n💛 ${name}님의 레벨 ${level} 기록이 로컬에 저장되었습니다!`);
+        });
+
+        initStatsUI();
+        updateLevelInfoDisplay();
+        draw();
+    </script>
+</body>
+</html>
